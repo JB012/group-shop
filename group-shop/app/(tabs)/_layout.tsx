@@ -23,7 +23,8 @@ export default function TabLayout() {
     name="index"
     options={{
     title: "Home",
-    headerShown: false,
+    headerShown: true,
+    headerShadowVisible: false,
     tabBarIcon: ({color, size}) => (
     <FontAwesome6 name='house' iconStyle='solid'/>
     )

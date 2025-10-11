@@ -1,13 +1,11 @@
-import {View, Text, Button} from 'react-native'
+import {View, Text, Button, Pressable} from 'react-native'
 import ListItem from './ListItem'
 
 export default function Lists({seeAll} : {seeAll : boolean}) {
+
     return (
         <View style={{flex: 1}}>
-            <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 20}}>
-                <Text style={{fontSize: 32}}>Lists</Text>
-                <Button title="Add List"></Button>
-            </View>
+            <Pressable style={{paddingVertical: 12, alignSelf: 'center'}}><Text style={{paddingVertical: 5}}>Add Lists</Text></Pressable>
             <View style={{flex: 1, rowGap: 12}}>
                 <ListItem title={'Name'} date={'Date'}/>
                 <ListItem title={'Name'} date={'Date'}/>

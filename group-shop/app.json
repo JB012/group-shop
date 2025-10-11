@@ -3,7 +3,6 @@
     "name": "group-shop",
     "slug": "group-shop",
     "version": "1.0.0",
-    "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "groupshop",
     "userInterfaceStyle": "automatic",
@@ -20,7 +19,10 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.groupshop"
+      "package": "com.anonymous.groupshop",
+      "permissions": [
+        "android.permission.SET_ORIENTATION"
+      ]
     },
     "web": {
       "output": "static",
@@ -45,11 +47,23 @@
         {
           "domain": "dev-ccqkvb14q4wkazd6.us.auth0.com"
         }
+      ],
+       [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "DEFAULT"
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ca3c29f6-0849-450f-b42b-5a6b14179b9b"
+      }
     }
   }
 }
