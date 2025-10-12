@@ -19,10 +19,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.groupshop",
-      "permissions": [
-        "android.permission.SET_ORIENTATION"
-      ]
+      "package": "com.anonymous.groupshop"
     },
     "web": {
       "output": "static",
