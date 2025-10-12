@@ -19,11 +19,11 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        rowGap: '30px'
+        rowGap: 30
     },
     input: {
         borderWidth: 1,
-        borderRadius: '50px'
+        borderRadius: 10
     }
     
 });
