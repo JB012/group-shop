@@ -1,25 +1,36 @@
 import { View, ScrollView, Text, Pressable, Button, Modal, TextInput } from "react-native"
 import { useState, useEffect } from "react"
-import User from "@/components/User";
-
+import UserProfile from "@/components/User";
+import { useUser } from "@clerk/clerk-expo";
 import * as ScreenOrientation from 'expo-screen-orientation';
 import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
+import { createClerkClient, User} from '@clerk/backend'
+
 
 //TODO: Search bar for People section
+let keyID = 1;
 
 export default function Profile({name, id} : {name : string, id: string}) {
     const [orientation, setOrientation] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [modalInput, setModalInput] = useState("");
+    const {isSignedIn, isLoaded, user} = useUser();
+    const [allUsers, setAllUsers] = useState(Array<User>);
 
-    function getOrientation(orientationEnum : number) {
-        if (orientationEnum === 1 || orientationEnum === 2) {
-            return "Portrait";
+    
+    
+    useEffect(() => {/* 
+        async function getAllUsers() {
+            return await clerkClient.users.getUserList();
+        } */
+ 
+        function getOrientation(orientationEnum : number) {
+            if (orientationEnum === 1 || orientationEnum === 2) {
+                return "Portrait";
+            }
+
+            return "Landscape";
         }
-
-        return "Landscape";
-    }
-    useEffect(() => {
         function handleOrientation(event : ScreenOrientation.OrientationChangeEvent) {
             setOrientation(getOrientation(event.orientationInfo.orientation));
         }
@@ -30,8 +41,11 @@ export default function Profile({name, id} : {name : string, id: string}) {
             ScreenOrientation.getOrientationAsync().then(orientationEnum => (orientationEnum === 1 || orientationEnum === 2) ? setOrientation("Portrait") : setOrientation('Landscape'))
         }
 
+        //getAllUsers().then(users => {if (allUsers.length === 0) {setAllUsers(users.data)}});
+        
+        //fetch("/api/users").then(response => response.json()).then(data => setAllUsers(data.users));
         return () => ScreenOrientation.removeOrientationChangeListener(subscription);
-    }, [orientation]);
+    }, [orientation, allUsers, setAllUsers]);
 
     return (
         <View style={{flex: 1}}>
@@ -43,8 +57,10 @@ export default function Profile({name, id} : {name : string, id: string}) {
                                 <FontAwesome6 name="magnifying-glass" size={20} style={{position: 'absolute', top: 20, left: 20 }} iconStyle="solid" />
                                 <TextInput style={{paddingHorizontal: 36, borderWidth: 1, borderColor: 'gray', borderRadius: 100, height: 40}} value={modalInput} onChangeText={setModalInput} />
                                 <ScrollView style={{flex: 1, paddingTop: 20}}>
-                                    <User name="john" id="john" added={false}/>
-                                    {/* Users show up here */}
+                                    <UserProfile name="john" id="john" added={false}/>
+                                    {
+                                        allUsers.map((user) => <UserProfile key={keyID++} name={user.fullName ?? ""} id={user.username ?? ""} added={false}/>)
+                                    }
                                 </ScrollView>
                             </View>
                             <Button title="Close" onPress={() => setModalVisible(false)}></Button>
@@ -54,8 +70,8 @@ export default function Profile({name, id} : {name : string, id: string}) {
                                 <View style={{ width: 100, height: 100, backgroundColor: 'red', borderRadius: 50}}>
                                 </View>
                                 <View style={{ columnGap: 10}}>
-                                    <Text>Name{name}</Text>
-                                    <Text>ID: <Text>{id}</Text></Text>
+                                    <Text>Name: {isSignedIn && user?.fullName ? user?.fullName : "N/A"}</Text>
+                                    <Text>ID: {isSignedIn && user?.username ? `@${user?.username}` : "N/A"}</Text>
                                 </View>
                             </View>
                         </View>
@@ -65,8 +81,8 @@ export default function Profile({name, id} : {name : string, id: string}) {
                              <Pressable onPress={() => setModalVisible(true)}><Text>Add More</Text></Pressable>
                         </View>
                         <ScrollView>
-                            <User name="John" id="john" added={true} />
-                            <User name="John" id="john" added={true} />
+                            <UserProfile name="John" id="john" added={true} />
+                            <UserProfile name="John" id="john" added={true} />
                         </ScrollView>
                         </View>
                     </ScrollView>

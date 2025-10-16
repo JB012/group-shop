@@ -3,7 +3,7 @@ import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import { Tabs } from 'expo-router';
 import { useContext } from 'react';
 import { View, Text, Pressable } from 'react-native';
-
+import { SignOutButton } from '@/components/SignOutButton';
 
 export default function TabLayout() {
   const authState = useContext(AuthContext);
@@ -13,7 +13,7 @@ export default function TabLayout() {
       <View style={{flexDirection: 'row', backgroundColor: 'white', height: 90, padding: 15, alignItems: 'center', justifyContent: 'space-between'}}>
         <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 20}}>
           <Text style={{fontSize: 20, fontWeight: 'bold'}}>Profile</Text>
-          <Pressable onPress={authState.logOut}><Text>Log Out</Text></Pressable>
+          <SignOutButton />
         </View>
       </View>
     )

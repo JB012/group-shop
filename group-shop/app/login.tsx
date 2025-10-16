@@ -15,7 +15,7 @@ export default function Login() {
             <TextInput style={styles.input} placeholder="Enter your username" onChangeText={setUser} value={user}></TextInput>
             <TextInput style={styles.input} placeholder="Enter your password" onChangeText={setPassword} value={password}></TextInput>
             <Link style={{alignSelf: 'flex-end'}} href={'/forgot'}><Text>Forgot your password?</Text></Link>
-            <Button title="Log In" onPress={authState.logIn}></Button>
+            <Button title="Log In" onPress={() => authState.logIn!(user, password)}></Button>
             <View>
                 <Text>Don&apos;t have an account? <Link href={'/signup'}><Text style={{color: 'blue'}}>Sign up</Text></Link></Text>
             </View>
