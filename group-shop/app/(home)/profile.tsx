@@ -16,7 +16,7 @@ export default function Profile({name, id} : {name : string, id: string}) {
     const [modalInput, setModalInput] = useState("");
     const {isSignedIn, isLoaded, user} = useUser();
     const [allUsers, setAllUsers] = useState(Array<User>);
-
+    const [search, setSearch] = useState("");
     
     
     useEffect(() => {/* 
@@ -48,8 +48,38 @@ export default function Profile({name, id} : {name : string, id: string}) {
     }, [orientation, allUsers, setAllUsers]);
 
     return (
-        <View style={{flex: 1}}>
-            {
+        <View style={{flex: 1, padding: 10, backgroundColor: 'white'}}>
+            <FontAwesome6 name="magnifying-glass" size={20} style={{position: 'absolute', top: 20, left: 20 }} iconStyle="solid" />
+            <FontAwesome6 name="at" size={18} color={'#c4c4c4'} style={{position: 'absolute', top: 22, left: 50 }} iconStyle="solid" />
+            <TextInput style={{paddingHorizontal: 36, borderWidth: 1, borderColor: 'gray', borderRadius: 100, height: 40, paddingLeft: 60}} value={search} placeholder="username" onChangeText={setSearch} />
+            <ScrollView style={{flex: 1, paddingTop: 30}}>
+                <View style={{flex: 1, gap: 10, paddingBottom: 30}}>
+                    <UserProfile name={"john"} id={"john"} added={true} />
+                    <UserProfile name={"john"} id={"john"} added={true} />
+                    
+                    <UserProfile name={"john"} id={"john"} added={true} />
+                    <UserProfile name={"john"} id={"john"} added={true} />
+                    
+                    <UserProfile name={"john"} id={"john"} added={true} />
+                    <UserProfile name={"john"} id={"john"} added={true} />
+                    
+                    <UserProfile name={"john"} id={"john"} added={true} />
+                    <UserProfile name={"john"} id={"john"} added={true} />
+                    
+                    <UserProfile name={"john"} id={"john"} added={true} />
+                    <UserProfile name={"john"} id={"john"} added={true} />
+                    
+                    <UserProfile name={"john"} id={"john"} added={true} />
+                </View>
+            </ScrollView>
+
+
+        </View>
+    )
+}
+
+
+/*   {
                     orientation === "Portrait" ?
                     <ScrollView style={{flex: 1, paddingLeft: 10, paddingTop: 10, paddingRight: 10, marginBottom: 5}}>
                         <Modal style={{margin: 10}} visible={modalVisible}>
@@ -108,7 +138,4 @@ export default function Profile({name, id} : {name : string, id: string}) {
                         </ScrollView>
                     </View>
                 </View>
-            }
-        </View>
-    )
-}
+            } */

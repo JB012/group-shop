@@ -8,11 +8,11 @@ import { SignOutButton } from '@/components/SignOutButton';
 export default function TabLayout() {
   const authState = useContext(AuthContext);
 
-  function ProfileHeader() {
+  function CustomHeader({header} : {header : string}) {
     return (
       <View style={{flexDirection: 'row', backgroundColor: 'white', height: 90, padding: 15, alignItems: 'center', justifyContent: 'space-between'}}>
         <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 20}}>
-          <Text style={{fontSize: 20, fontWeight: 'bold'}}>Profile</Text>
+          <Text style={{fontSize: 20, fontWeight: 'bold'}}>{header}</Text>
           <SignOutButton />
         </View>
       </View>
@@ -59,11 +59,11 @@ export default function TabLayout() {
 <Tabs.Screen
     name="profile"
     options={{
-    title: "Profile",
+    title: "People",
     headerShadowVisible: false,
-    header: () => <ProfileHeader />,
+    header: () => <CustomHeader header={"People"}/>,
     tabBarIcon: ({color, size}) => (
-    <FontAwesome6 name='user' iconStyle='solid'/>
+    <FontAwesome6 name='people-group' iconStyle='solid'/>
     )
 }}/>
 </Tabs>

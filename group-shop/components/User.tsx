@@ -9,7 +9,7 @@ export default function User({name, id, added} : {name : string, id : string, ad
                 </View>
                 <View style={{flex: 1}}>
                     <Text>{name}</Text>
-                    <Text>ID: {id}</Text>
+                    <Text>@{id}</Text>
                 </View>
             </View>
             {
