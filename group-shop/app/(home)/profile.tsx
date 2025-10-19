@@ -5,25 +5,28 @@ import { useUser } from "@clerk/clerk-expo";
 import * as ScreenOrientation from 'expo-screen-orientation';
 import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
 import { createClerkClient, User} from '@clerk/backend'
-
+import { UserType } from "../types/UserType";
+import axios from "axios";
 
 //TODO: Search bar for People section
-let keyID = 1;
 
 export default function Profile({name, id} : {name : string, id: string}) {
     const [orientation, setOrientation] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [modalInput, setModalInput] = useState("");
     const {isSignedIn, isLoaded, user} = useUser();
-    const [allUsers, setAllUsers] = useState(Array<User>);
     const [search, setSearch] = useState("");
+    const [users, setUsers] = useState(Array<UserType>);
     
     
-    useEffect(() => {/* 
-        async function getAllUsers() {
-            return await clerkClient.users.getUserList();
-        } */
- 
+    useEffect(() => {
+        function getAllUsers() {
+            if (users.length === 0) {
+                axios.get(`http://${process.env.EXPO_PUBLIC_LOCAL_IP}:5000/users`).then((res) => setUsers(res.data))
+                .catch((err) => console.log(err))
+            }
+        }
+
         function getOrientation(orientationEnum : number) {
             if (orientationEnum === 1 || orientationEnum === 2) {
                 return "Portrait";
@@ -38,14 +41,14 @@ export default function Profile({name, id} : {name : string, id: string}) {
         const subscription = ScreenOrientation.addOrientationChangeListener(handleOrientation);
 
         if (orientation === "") {
-            ScreenOrientation.getOrientationAsync().then(orientationEnum => (orientationEnum === 1 || orientationEnum === 2) ? setOrientation("Portrait") : setOrientation('Landscape'))
+            ScreenOrientation.getOrientationAsync().then(orientationEnum => (orientationEnum === 1 || orientationEnum === 2) 
+            ? setOrientation("Portrait") : setOrientation('Landscape'))
         }
 
-        //getAllUsers().then(users => {if (allUsers.length === 0) {setAllUsers(users.data)}});
-        
-        //fetch("/api/users").then(response => response.json()).then(data => setAllUsers(data.users));
+        getAllUsers();
+
         return () => ScreenOrientation.removeOrientationChangeListener(subscription);
-    }, [orientation, allUsers, setAllUsers]);
+    }, [orientation, users.length]);
 
     return (
         <View style={{flex: 1, padding: 10, backgroundColor: 'white'}}>
@@ -54,22 +57,9 @@ export default function Profile({name, id} : {name : string, id: string}) {
             <TextInput style={{paddingHorizontal: 36, borderWidth: 1, borderColor: 'gray', borderRadius: 100, height: 40, paddingLeft: 60}} value={search} placeholder="username" onChangeText={setSearch} />
             <ScrollView style={{flex: 1, paddingTop: 30}}>
                 <View style={{flex: 1, gap: 10, paddingBottom: 30}}>
-                    <UserProfile name={"john"} id={"john"} added={true} />
-                    <UserProfile name={"john"} id={"john"} added={true} />
-                    
-                    <UserProfile name={"john"} id={"john"} added={true} />
-                    <UserProfile name={"john"} id={"john"} added={true} />
-                    
-                    <UserProfile name={"john"} id={"john"} added={true} />
-                    <UserProfile name={"john"} id={"john"} added={true} />
-                    
-                    <UserProfile name={"john"} id={"john"} added={true} />
-                    <UserProfile name={"john"} id={"john"} added={true} />
-                    
-                    <UserProfile name={"john"} id={"john"} added={true} />
-                    <UserProfile name={"john"} id={"john"} added={true} />
-                    
-                    <UserProfile name={"john"} id={"john"} added={true} />
+                    {
+                        users.map((user) => <UserProfile key={user.id} fullName={user.fullName} userName={user.userName} id={user.id} /> )
+                    }
                 </View>
             </ScrollView>
 

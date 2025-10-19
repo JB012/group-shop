@@ -3,19 +3,15 @@ const app = express();
 const path = require("path");
 const bodyParser = require("body-parser");
 const port = 5000;
-const mysql = require("mysql");
+const { pool } = require("./db");
 const { verifyWebhook } = require('@clerk/express/webhooks');
 const { clerkClient, clerkMiddleware, getAuth } =  require('@clerk/express')
-
-require("dotenv").config({
-    path: path.resolve(__dirname, ".env")
-});
-
 const users = require("./routes/users");
+const cors = require('cors');
 
 app.use("/users", users);
 app.use(clerkMiddleware());
-
+app.use(cors());
 app.use(bodyParser.urlencoded({extended:false}));
 
 app.post('/api/webhooks', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -27,17 +23,26 @@ app.post('/api/webhooks', express.raw({ type: 'application/json' }), async (req,
     const { id } = evt.data
     const eventType = evt.type
 
-    const connection = mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        port: process.env.DB_PORT
-    });
-
-    if (eventType === "user.deleted") {
+    if (eventType === "user.created") {
         try {
-            connection.query(`DELETE FROM favorites WHERE favoriteID=? OR userID=?`, [evt.data.id, evt.data.id]);
+          pool.query('INSERT INTO users VALUES (?)', [evt.data.id], (err, results, fields) => {
+            console.log(results);
+          });
+        }
+        catch (err) {
+            console.error('Error verifying webhook:', err)
+            return res.status(400).send('Error verifying webhook')
+        }
+    }
+
+    else if (eventType === "user.deleted") {
+        try {
+            pool.getConnection((err, connection) => {
+              connection.query(`DELETE FROM favorites WHERE favoriteID=? OR userID=?`, [evt.data.id, evt.data.id]);
+              connection.query(`DELETE FROM users WHERE userID=?`, [evt.data.id]);
+
+              connection.release();
+            });
         }
         catch(err) {
             console.error('Error verifying webhook:', err)

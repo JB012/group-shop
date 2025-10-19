@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { Text, TextInput, TouchableOpacity, View, ScrollView, Button, KeyboardAvoidingView, Platform } from 'react-native'
-import { useSignUp } from '@clerk/clerk-expo'
+import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
+import { ClerkAPIError } from '@clerk/types'
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6'
 
 export default function SignUpScreen() {
@@ -16,6 +17,7 @@ export default function SignUpScreen() {
   const [hidePassword, setHidePassword] = React.useState(true)
   const [pendingVerification, setPendingVerification] = React.useState(false)
   const [code, setCode] = React.useState('')
+  const [errors, setErrors] = React.useState<ClerkAPIError[]>();
 
   // Handle submission of sign-up form
   const onSignUpPress = async () => {
@@ -42,7 +44,8 @@ export default function SignUpScreen() {
     } catch (err) {
       // See https://clerk.com/docs/guides/development/custom-flows/error-handling
       // for more info on error handling
-      console.error(JSON.stringify(err, null, 2))
+      
+      if (isClerkAPIResponseError(err)) setErrors(err.errors)
     }
   }
 
@@ -61,15 +64,12 @@ export default function SignUpScreen() {
       if (signUpAttempt.status === 'complete') {
         await setActive({ session: signUpAttempt.createdSessionId })
         router.replace('/')
-      } else {
-        // If the status is not complete, check why. User may need to
-        // complete further steps.
-        console.error(JSON.stringify(signUpAttempt, null, 2))
       }
+      
     } catch (err) {
       // See https://clerk.com/docs/guides/development/custom-flows/error-handling
       // for more info on error handling
-      console.error(JSON.stringify(err, null, 2))
+      if (isClerkAPIResponseError(err)) setErrors(err.errors)
     }
   }
 
@@ -127,6 +127,12 @@ export default function SignUpScreen() {
                   </ScrollView>
                 </KeyboardAvoidingView>
                 <Button title="Sign Up" onPress={onSignUpPress}></Button>
+                {errors && (
+                  errors.map((err) => 
+                    <View key={err.longMessage}>
+                      <Text style={{color: "red"}}>{err.longMessage}</Text>
+                    </View>
+                  ))}
                 <View>
                     <Text>Already have an account? <Link href={'/sign-in'}><Text style={{color: 'blue'}}>Sign in</Text></Link></Text>
                 </View>
