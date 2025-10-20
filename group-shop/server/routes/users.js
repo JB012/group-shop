@@ -73,4 +73,17 @@ router.post('/addFavorite', (req, res) => {
     return res.send("Added");
 });
 
+router.post('/removeFavorite', (req, res) => {
+    const currentUserID = req.body.currentUserID;
+    const favoriteID = req.body.favoriteID;
+    try {
+        pool.query(`DELETE FROM favorites WHERE userID=? AND favoriteID=?`, [currentUserID, favoriteID]);
+        console.log('removed from favorites');
+    }
+    catch (err) {
+        res.send(err);
+    }
+    return res.send("Removed");
+});
+
 module.exports = router;

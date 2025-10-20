@@ -8,7 +8,7 @@ import { createClerkClient, User} from '@clerk/backend'
 import axios from "axios";
 import { UserType } from "../../components/UserType";
 
-export default function Profile({name, id} : {name : string, id: string}) {
+export default function People({name, id} : {name : string, id: string}) {
     const [orientation, setOrientation] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [modalInput, setModalInput] = useState("");

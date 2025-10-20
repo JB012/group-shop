@@ -1,4 +1,3 @@
-import { AuthContext, AuthProvider } from "@/utils/AuthContext";
 import { Redirect, Slot, Stack } from "expo-router";
 import { useContext } from "react";
 import { ClerkProvider } from '@clerk/clerk-expo'
@@ -10,7 +9,7 @@ export default function RootLayout() {
 
     return (
         <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-            <MenuProvider>
+            <MenuProvider customStyles={{backdrop: {opacity: 0.5, backgroundColor: 'black'}}}>
                 <Stack>
                     <Stack.Screen name="(auth)" options={{headerShown: false}}/>
                     <Stack.Screen name="(home)" options={{headerShown: false}}/>

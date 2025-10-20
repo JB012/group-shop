@@ -1,4 +1,4 @@
-import { AuthContext } from '@/utils/AuthContext';
+
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 import { Tabs } from 'expo-router';
 import { useContext } from 'react';
@@ -6,8 +6,6 @@ import { View, Text, Pressable } from 'react-native';
 import { SignOutButton } from '@/components/SignOutButton';
 
 export default function TabLayout() {
-  const authState = useContext(AuthContext);
-
   function CustomHeader({header} : {header : string}) {
     return (
       <View style={{flexDirection: 'row', backgroundColor: 'white', height: 90, padding: 15, alignItems: 'center', justifyContent: 'space-between'}}>
@@ -57,7 +55,7 @@ export default function TabLayout() {
     )
 }}/>
 <Tabs.Screen
-    name="profile"
+    name="people"
     options={{
     title: "People",
     headerShadowVisible: false,
