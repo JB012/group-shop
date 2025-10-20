@@ -5,10 +5,8 @@ import { useUser } from "@clerk/clerk-expo";
 import * as ScreenOrientation from 'expo-screen-orientation';
 import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
 import { createClerkClient, User} from '@clerk/backend'
-import { UserType } from "../types/UserType";
 import axios from "axios";
-
-//TODO: Search bar for People section
+import { UserType } from "../../components/UserType";
 
 export default function Profile({name, id} : {name : string, id: string}) {
     const [orientation, setOrientation] = useState("");
@@ -16,13 +14,22 @@ export default function Profile({name, id} : {name : string, id: string}) {
     const [modalInput, setModalInput] = useState("");
     const {isSignedIn, isLoaded, user} = useUser();
     const [search, setSearch] = useState("");
-    const [users, setUsers] = useState(Array<UserType>);
+    const [allUsers, setAllUsers] = useState(Array<UserType>);
+    const [searchUsers, setsearchUsers] = useState(Array<UserType>);
+    const [favorites, setFavorites] = useState(Array<UserType>);
     
     
     useEffect(() => {
         function getAllUsers() {
-            if (users.length === 0) {
-                axios.get(`http://${process.env.EXPO_PUBLIC_LOCAL_IP}:5000/users`).then((res) => setUsers(res.data))
+            if (allUsers.length === 0) {
+                axios.get(`http://${process.env.EXPO_PUBLIC_LOCAL_IP}:5000/users`).then((res) => {setAllUsers(res.data); setsearchUsers(res.data)})
+                .catch((err) => console.log(err))
+            }
+        }
+        
+        function getAllFavorites() {
+            if (favorites.length === 0) {
+                axios.get(`http://${process.env.EXPO_PUBLIC_LOCAL_IP}:5000/users/${user?.id}/favorites`).then((res) => setFavorites(res.data))
                 .catch((err) => console.log(err))
             }
         }
@@ -46,19 +53,36 @@ export default function Profile({name, id} : {name : string, id: string}) {
         }
 
         getAllUsers();
+        getAllFavorites();
 
         return () => ScreenOrientation.removeOrientationChangeListener(subscription);
-    }, [orientation, users.length]);
+    }, [favorites.length, orientation, user?.id, allUsers.length]);
+
+
+    function handleSearch(input : string ) {
+        setSearch(input);
+
+        const filteredSearchUsers = searchUsers.filter((user) => user.userName.startsWith(input.toLowerCase())); 
+        if (filteredSearchUsers.length === 0) {
+            setsearchUsers(allUsers)
+        } 
+        else {
+            setsearchUsers(filteredSearchUsers);
+        }
+    }
 
     return (
         <View style={{flex: 1, padding: 10, backgroundColor: 'white'}}>
             <FontAwesome6 name="magnifying-glass" size={20} style={{position: 'absolute', top: 20, left: 20 }} iconStyle="solid" />
             <FontAwesome6 name="at" size={18} color={'#c4c4c4'} style={{position: 'absolute', top: 22, left: 50 }} iconStyle="solid" />
-            <TextInput style={{paddingHorizontal: 36, borderWidth: 1, borderColor: 'gray', borderRadius: 100, height: 40, paddingLeft: 60}} value={search} placeholder="username" onChangeText={setSearch} />
-            <ScrollView style={{flex: 1, paddingTop: 30}}>
+            <TextInput autoFocus={false} style={{paddingHorizontal: 36, borderWidth: 1, borderColor: 'gray', borderRadius: 100, height: 40, paddingLeft: 60}} value={search} placeholder="username" onChangeText={handleSearch} />
+            <Text style={{fontSize: 18, paddingVertical: 10}}>{search === "" ? 'Favorites' : 'Search Results'}</Text>
+            <ScrollView style={{flex: 1}}>
                 <View style={{flex: 1, gap: 10, paddingBottom: 30}}>
                     {
-                        users.map((user) => <UserProfile key={user.id} fullName={user.fullName} userName={user.userName} id={user.id} /> )
+                        search === "" ?
+                        favorites.map((user) => <UserProfile key={user.id} fullName={user.fullName} userName={user.userName} id={user.id} favorites={favorites} setFavorites={setFavorites} /> ) :
+                        searchUsers.map((user) => <UserProfile key={user.id} fullName={user.fullName} userName={user.userName} id={user.id} favorites={favorites} setFavorites={setFavorites} /> ) 
                     }
                 </View>
             </ScrollView>

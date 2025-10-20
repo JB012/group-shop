@@ -13,6 +13,7 @@ app.use("/users", users);
 app.use(clerkMiddleware());
 app.use(cors());
 app.use(bodyParser.urlencoded({extended:false}));
+app.use(bodyParser.json())
 
 app.post('/api/webhooks', express.raw({ type: 'application/json' }), async (req, res) => {
   try {

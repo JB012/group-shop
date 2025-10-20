@@ -3,10 +3,14 @@ const mysql = require("mysql");
 const { pool } = require("../db");
 const router = express.Router();
 const { clerkClient, clerkMiddleware, getAuth } =  require('@clerk/express')
+const bodyParser = require("body-parser");
 //TODO: Clear Clerk users, make users, display all users in People search section,
 // add user to favorite, display favorite 
 
 router.use(clerkMiddleware());
+
+router.use(bodyParser.urlencoded({extended:false}));
+router.use(bodyParser.json())
 
 router.get('/', async (req, res) => {
     try {
@@ -36,29 +40,36 @@ router.get('/:userID/favorites', (req, res) => {
     const userID = req.params["userID"];
 
     try {
-        pool.query('SELECT favoriteID FROM favorites WHERE userID=?', [userID], (err, results, fields) => {
-            const favorites = Object.values(JSON.parse(JSON.stringify(results)));
+        pool.query('SELECT favoriteID FROM favorites WHERE userID=?', [userID], async (err, results, fields) => {
+            const favoriteIDJSONs = Object.values(JSON.parse(JSON.stringify(results)));
+            const favorites = [];
+
+            for (const favoriteIDJSON of favoriteIDJSONs) {
+                const user = await clerkClient.users.getUser(favoriteIDJSON["favoriteID"]);
+                favorites.push({fullName: user.fullName, id: user.id, userName: user.username});
+            }
 
             return res.send(favorites);
         });
     }
     catch(err) {
         console.log(err);
-        return res.send({});
+        return res.send([]);
     }
  
 })
 
 router.post('/addFavorite', (req, res) => {
-    const currentUser = req.body.userName;
-    const userToAdd = req.body.userToAdd;
+    const currentUserID = req.body.currentUserID;
+    const favoriteID = req.body.favoriteID;
     try {
-        pool.query(`INSERT INTO favorites VALUES (?, ?)`, [currentUser, userToAdd]);
+        pool.query(`INSERT INTO favorites VALUES (?, ?)`, [currentUserID, favoriteID]);
+        
+        console.log('Added favorites');
     }
     catch (err) {
-        res.send(P);
+        res.send(err);
     }
-
     return res.send("Added");
 });
 
