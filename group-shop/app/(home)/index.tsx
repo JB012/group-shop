@@ -3,7 +3,8 @@ import Receipts from "@/components/Receipts";
 import { ScrollView, StyleSheet, Pressable, View, Text } from "react-native";
 import { useState } from "react";
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
-export default function Tab() {
+
+export default function Home() {
     const [selectedTab, setSelectedTab] = useState("Lists");
     //TODO: Swipe between tabs
     return (

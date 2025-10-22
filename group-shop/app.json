@@ -45,12 +45,13 @@
           "domain": "dev-ccqkvb14q4wkazd6.us.auth0.com"
         }
       ],
-       [
+      [
         "expo-screen-orientation",
         {
           "initialOrientation": "DEFAULT"
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,

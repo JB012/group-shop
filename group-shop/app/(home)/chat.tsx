@@ -1,9 +1,21 @@
-import { View, Text } from "react-native";
+import ChatRoom from "@/components/ChatRoom";
+import { useState, useEffect } from "react";
+import { View, Text, ScrollView } from "react-native";
 
-export default function Tab() {
+interface ChatRoomProp {
+  title: string,
+  id: number,
+  description?: string
+}
+
+export default function Chat() {
+  const [chatRooms, setChatRooms] = useState(Array<ChatRoomProp>);
+  
   return (
-    <View>
-      <Text>Tab [Home|Settings]</Text>
-    </View>
+    <ScrollView>
+      <View style={{flex: 1}}>
+          <ChatRoom title="New chat" id={2} description="New chatroom"/>
+      </View>
+    </ScrollView>
   );
 }

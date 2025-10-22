@@ -8,7 +8,7 @@ import { createClerkClient, User} from '@clerk/backend'
 import axios from "axios";
 import { UserType } from "../../components/UserType";
 
-export default function People({name, id} : {name : string, id: string}) {
+export default function People() {
     const [orientation, setOrientation] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [modalInput, setModalInput] = useState("");
@@ -71,6 +71,25 @@ export default function People({name, id} : {name : string, id: string}) {
         }
     }
 
+    function isInFavorites(id: string) {
+        return favorites.find((favorite) => favorite.id === id) ? true : false;
+    }
+
+    async function addToFavorites(someUser : UserType) {
+        if (!isInFavorites(someUser.id)) {
+            await axios.post(`http://${process.env.EXPO_PUBLIC_LOCAL_IP}:5000/users/addFavorite`, {currentUserID: user!.id, favoriteID: someUser.id});
+            setFavorites([...favorites, someUser]);
+        }
+    }
+
+    async function removeFromFavorites(someUser : UserType) {
+        if (isInFavorites(someUser.id)) {
+            await axios.post(`http://${process.env.EXPO_PUBLIC_LOCAL_IP}:5000/users/removeFavorite`, {currentUserID: user!.id, favoriteID: someUser.id});
+            setFavorites(favorites.filter((favorite) => favorite.id !== someUser.id));
+        }
+        
+    }
+
     return (
         <View style={{flex: 1, padding: 10, backgroundColor: 'white'}}>
             <FontAwesome6 name="magnifying-glass" size={20} style={{position: 'absolute', top: 20, left: 20 }} iconStyle="solid" />
@@ -81,8 +100,8 @@ export default function People({name, id} : {name : string, id: string}) {
                 <View style={{flex: 1, gap: 10, paddingBottom: 30}}>
                     {
                         search === "" ?
-                        favorites.map((user) => <UserProfile key={user.id} fullName={user.fullName} userName={user.userName} id={user.id} favorites={favorites} setFavorites={setFavorites} /> ) :
-                        searchUsers.map((user) => <UserProfile key={user.id} fullName={user.fullName} userName={user.userName} id={user.id} favorites={favorites} setFavorites={setFavorites} /> ) 
+                        favorites.map((user) => <UserProfile key={user.id} fullName={user.fullName} userName={user.userName} id={user.id} isInFavorites={isInFavorites} addToFavorites={addToFavorites} removeFromFavorites={removeFromFavorites} /> ) :
+                        searchUsers.map((user) => <UserProfile key={user.id} fullName={user.fullName} userName={user.userName} id={user.id} isInFavorites={isInFavorites} addToFavorites={addToFavorites} removeFromFavorites={removeFromFavorites} /> ) 
                     }
                 </View>
             </ScrollView>
