@@ -14,8 +14,8 @@ interface UserProp {
     addToFavorites?: (user: UserType) => void, 
     removeFromFavorites?: (user: UserType) => void, 
     isInFavorites?: (id: string) => boolean, 
-    selectUser?: (id : string) => void, 
-    deselectUser?: (id : string) => void
+    selectUser?: (user : UserType) => void, 
+    deselectUser?: (user : UserType) => void
 }
 
 export default function User({fullName, userName, id, selectUser, deselectUser, isInFavorites, addToFavorites, removeFromFavorites} : UserProp) {
@@ -44,11 +44,11 @@ export default function User({fullName, userName, id, selectUser, deselectUser, 
     function handleCheckBox() {
         setChecked(!checked);
 
-        if (!checked) {
-            deselectUser?.(id);
+        if (checked) {
+            deselectUser?.({fullName, userName, id});
         }
         else {
-            selectUser?.(id);
+            selectUser?.({fullName, userName, id});
         }
     }
 

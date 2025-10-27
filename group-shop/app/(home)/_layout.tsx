@@ -5,6 +5,7 @@ import { useContext } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { SignOutButton } from '@/components/SignOutButton';
 import { Menu,MenuOptions,MenuOption,MenuTrigger, renderers } from 'react-native-popup-menu';
+import { Button } from '@react-navigation/elements';
 const { Popover, SlideInMenu } = renderers;
 
 export default function TabLayout() {
@@ -54,7 +55,7 @@ export default function TabLayout() {
     )
 }}/>
 <Tabs.Screen
-    name="chat"
+    name="chatView"
     options={{
     title: "Chat",
     headerShown: true,
@@ -76,7 +77,17 @@ export default function TabLayout() {
 }}/>
 <Tabs.Screen
   name='addChatRoom'
-  options={{href: null}}
+  options={{
+    title: 'Add To Chat',
+    href: null,
+    headerShown: false
+    }}
+/>
+<Tabs.Screen
+  name='chatRoom/[id]'
+  options={{
+    href: null,
+    }}
 />
 </Tabs>
   );

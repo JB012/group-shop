@@ -36,6 +36,19 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get("/:userID", async (req, res) => {
+    const userID = req.params["userID"];
+    try {
+        const user = await clerkClient.users.getUser(userID);
+        res.send({fullName: user.fullName, id: user.id, userName: user.username});
+    }   
+    catch (err) {
+        console.log(err);
+        res.send([]);
+
+    }
+});
+
 router.get('/:userID/favorites', (req, res) => {
     const userID = req.params["userID"];
 
