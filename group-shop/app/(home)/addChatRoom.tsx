@@ -118,8 +118,8 @@ export default function Add() {
     }
 
     async function handleAddChatRoom() {
-        const {error} = await supabase.from('chatroom').insert({owner: user?.id, name: chatRoomName === "" ? setDefaultChatTitle() : chatRoomName, 
-        members: JSON.stringify([selectUsers.map((user) => user.id), user?.id]), avatar_url: image});
+        const {error} = await supabase.from('chatroom').insert({owner_id: user?.id, name: chatRoomName === "" ? setDefaultChatTitle() : chatRoomName, 
+        type: searchUsers.length > 1 ? "group" : "direct", avatar_url: image});
         
         if (!error) {
             router.navigate("/(home)/chatView");

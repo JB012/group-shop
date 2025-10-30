@@ -6,7 +6,7 @@ export default function ChatRoom({avatar_url, name, members, id} : {id: UUID, av
     const router = useRouter();
 
     return (
-        <TouchableHighlight onPress={() => {router.navigate(`/(home)/chatRoom/[${id}]`)}}>
+        <TouchableHighlight onPress={() => {router.navigate(`/(home)/chatRoom/${id}`)}}>
                 <View style={{flex: 1, padding: 10, flexDirection: 'row', gap: 10, backgroundColor: 'white'}}>
                     <View style={{ width: 50, height: 50, backgroundColor: 'red', borderRadius: 25}}>
                     </View>

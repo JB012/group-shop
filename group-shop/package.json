@@ -15,6 +15,7 @@
     "@clerk/clerk-expo": "^2.16.1",
     "@clerk/elements": "^0.23.70",
     "@expo/vector-icons": "^15.0.2",
+    "@legendapp/list": "^2.0.14",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-vector-icons/fontawesome6": "^12.2.0",
     "@react-navigation/elements": "^2.6.3",
