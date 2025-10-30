@@ -1,9 +1,10 @@
 import * as React from 'react'
-import { Text, TextInput, TouchableOpacity, View, ScrollView, Button, KeyboardAvoidingView, Platform } from 'react-native'
+import { Text, TextInput, TouchableOpacity, View, ScrollView, Button, Platform } from 'react-native'
 import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
 import { ClerkAPIError } from '@clerk/types'
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6'
+import { KeyboardController, KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp()
@@ -18,12 +19,10 @@ export default function SignUpScreen() {
   const [pendingVerification, setPendingVerification] = React.useState(false)
   const [code, setCode] = React.useState('')
   const [errors, setErrors] = React.useState<ClerkAPIError[]>();
-
+  
   // Handle submission of sign-up form
   const onSignUpPress = async () => {
     if (!isLoaded) return
-
-    console.log(emailAddress, password)
 
     // Start sign-up process using email and password provided
     try {
@@ -92,10 +91,11 @@ export default function SignUpScreen() {
     )
   }
 
+  
+
    return (
           <ScrollView>
             <View style={{flex: 1, padding: 25, paddingTop: 50, justifyContent: 'center', rowGap: 20}}>
-                <Text style={{fontSize: 36}}>GroupShop</Text>
                 <Text style={{fontSize: 24}}>Sign Up</Text>
                 <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
                   <ScrollView style={{flex: 1}}>

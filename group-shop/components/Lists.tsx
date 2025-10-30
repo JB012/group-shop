@@ -1,14 +1,6 @@
 import {View, Text, Button, Pressable} from 'react-native'
 import ListItem from './ListItem'
-import { useSupabase } from '@/providers/SupabaseProvider';
 export default function Lists({seeAll} : {seeAll : boolean}) {
-    
-    const supabase = useSupabase();
-
-    async function test() {
-        const {data, error} = await supabase.from('Test').insert({test: 'Testing insert 2'});
-        console.log(error);
-    }
 
     return (
         <View style={{flex: 1}}>
@@ -18,7 +10,7 @@ export default function Lists({seeAll} : {seeAll : boolean}) {
                 <ListItem title={'Name'} date={'Date'}/>
                 <ListItem title={'Name'} date={'Date'}/>
                 <ListItem title={'Name'} date={'Date'}/>
-                {seeAll === false && <Button onPress={test} title="See More"></Button>}
+                {seeAll === false && <Button title="See More"></Button>}
             </View>
         </View>
     )

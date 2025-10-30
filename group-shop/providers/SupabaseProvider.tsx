@@ -14,7 +14,7 @@ const SupabaseContext = createContext<SupabaseClientType>({supabase: createClien
 
 export default function SupabaseProvider({children} : PropsWithChildren) {
     const {session} = useSession();
-    const [supabase, setSupabase] = useState<SupabaseClient> (createClient(supabaseUrl!, supabasePublishableKey!));
+    const [supabase, setSupabase] = useState<SupabaseClient>(createClient(supabaseUrl!, supabasePublishableKey!));
 
     useEffect(() => {
         const newClient = createClient(supabaseUrl!, supabasePublishableKey!, {

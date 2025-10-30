@@ -1,53 +1,134 @@
-import { View, Text, ScrollView, TextInput, Pressable, Platform, KeyboardAvoidingView, Image } from "react-native";
+import { View, Text, ScrollView, TextInput, Pressable, Platform, Image, Alert, BackHandler } from "react-native";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { UserType } from "@/components/UserType";
 import User from "@/components/User";
 import { useUser } from "@clerk/clerk-expo";
 import FontAwesome6 from "@react-native-vector-icons/fontawesome6";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import useOrientation from "@/utils/useOrientation";
 import * as ImagePicker from 'expo-image-picker';
+import { useSupabase } from "@/providers/SupabaseProvider";
+import { KeyboardController, KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 export default function Add() { 
     const orientation = useOrientation();
     const [searchFavorite, setSearchFavorite] = useState("");
     const [favorites, setFavorites] = useState(Array<UserType>);
+    const [searchUsers, setSearchUsers] = useState(Array<UserType>);
     const [selectUsers, setSelectUsers] = useState(Array<UserType>);
     const [clickedNext, setClickedNext] = useState(false);
     const [chatRoomName, setChatRoomName] = useState("");
     const {isSignedIn, isLoaded, user} = useUser();
     const [image, setImage] = useState<string | null>(null);
+    const supabase = useSupabase();
+    const router = useRouter();
     
-    function selectUser(user: UserType) {
+    async function selectUser(id : string) {
+        const {data} = await supabase.from('users').select().eq("id", id);
+        const [user] : UserType[] = data as UserType[];
+        
         if (!selectUsers.includes(user)) {
             setSelectUsers([...selectUsers, user]);
         }
     }
 
-    function deselectUser(user: UserType) {
+    async function deselectUser(id : string) {
+        const {data} = await supabase.from('users').select().eq("id", id);
+        const [user] : UserType[] = data as UserType[];
+
         if (selectUsers.includes(user)) {
             setSelectUsers(selectUsers.filter((someUser) => someUser.id !== user.id));
         }
     }
 
-     function setDefaultChatTitle() {
-        return selectUsers.length > 1 ? `${selectUsers[0].fullName.split(" ")[0]} and ${selectUsers.slice(1).length} others` :
-        `${selectUsers[0].fullName}`;
+    function isSelected(id : string) {
+        return selectUsers.some((user) => user.id === id);
+    }
+
+    function setDefaultChatTitle() {
+        const sortedSelectUsers = selectUsers.sort((userA, userB) => userA.first_name.localeCompare(userB.first_name));
+        if (selectUsers.length > 1) {
+            if (user!.firstName!.localeCompare(sortedSelectUsers[0].first_name) < 0) {
+                return `${user!.firstName} and ${selectUsers.length} others`;
+            }
+            
+            return `${sortedSelectUsers[0].first_name} and ${selectUsers.length} others`;
+        }
+
+        return `${selectUsers[0].first_name} ${selectUsers[0].last_name}`;
     }
 
     useEffect(() => {
-        function getAllFavorites() {
+         async function getAllFavorites() {
             if (favorites.length === 0) {
-                axios.get(`http://${process.env.EXPO_PUBLIC_LOCAL_IP}:5000/users/${user?.id}/favorites`).then((res) => setFavorites(res.data))
-                .catch((err) => console.log(err))
+                const {data, error} = await supabase.from('favorites').select().eq('userID', user!.id);
+                
+                if (!error) {
+                    const users : UserType[] = [];
+
+                    for (const elem of data) {
+                        const {data, error} = await supabase.from('users').select().eq('id', elem.favoriteID);
+
+                        if (!error) {
+                            users.push(...data as UserType[]);
+                        }
+                        else {
+                            console.log(error);
+                        }
+                    }
+
+                    setFavorites(users);
+                    setSearchUsers(users);
+                }                
+                else {
+                    console.log(error);
+                } 
             }
         }
 
+
         getAllFavorites();
 
-    }, [favorites.length, user?.id]);
+        if (Platform.OS === "android") {
+            const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+                if (clickedNext) {
+                    setClickedNext(!clickedNext);
+                    return true;
+                }
+
+                return false;
+            });
+
+
+            return () => backHandler.remove();
+        }
+    }, [clickedNext, favorites.length, supabase, user, user?.id]);
     
+    function handleSearch(input : string ) {
+        setSearchFavorite(input);
+
+        const filteredSearchUsers = searchUsers.filter((user) => user.username.startsWith(input.toLowerCase())); 
+        if (filteredSearchUsers.length === 0) {
+            setSearchUsers(favorites);
+        } 
+        else {
+            setSearchUsers(filteredSearchUsers);
+        }
+    }
+
+    async function handleAddChatRoom() {
+        const {error} = await supabase.from('chatroom').insert({owner: user?.id, name: chatRoomName === "" ? setDefaultChatTitle() : chatRoomName, 
+        members: JSON.stringify([selectUsers.map((user) => user.id), user?.id]), avatar_url: image});
+        
+        if (!error) {
+            router.navigate("/(home)/chatView");
+        }
+        else {
+            Alert.alert(error.message);
+        } 
+    }
+
     async function handleImage() {
         try {
             let result = await ImagePicker.launchImageLibraryAsync({
@@ -85,7 +166,7 @@ export default function Add() {
                         selectUsers.length === 0 ? 'gainsboro' : Platform.OS === "ios" ? "#007AFF" : "#2196F3"}} disabled={selectUsers.length === 0 ? true : false}>
                             <Text style={{color: "white"}}>Next</Text>
                         </Pressable> :
-                        <Pressable onPress={() => setClickedNext(true)} style={{borderRadius: 100, justifyContent: 'center', alignItems: 'center', width: 80, height: 30, backgroundColor: 
+                        <Pressable onPress={handleAddChatRoom} style={{borderRadius: 100, justifyContent: 'center', alignItems: 'center', width: 80, height: 30, backgroundColor: 
                         selectUsers.length === 0 ? 'gainsboro' : Platform.OS === "ios" ? "#007AFF" : "#2196F3"}}>
                             <Text style={{color: 'white'}}>Finish</Text>
                         </Pressable>
@@ -98,10 +179,12 @@ export default function Add() {
                     <Text style={{fontSize: 16, paddingVertical: 5}}>Add favorites to your chatroom</Text>
                     <FontAwesome6 name="magnifying-glass" size={20} style={{position: 'absolute', top: 40, left: 20 }} iconStyle="solid" />
                     <FontAwesome6 name="at" size={18} color={'#c4c4c4'} style={{position: 'absolute', top: 40, left: 50 }} iconStyle="solid" />
-                    <TextInput style={{borderWidth: 1, borderColor: 'gray', borderRadius: 100, height: 40, paddingLeft: 70}} value={searchFavorite} onChangeText={setSearchFavorite} />
+                    <TextInput style={{borderWidth: 1, borderColor: 'gray', borderRadius: 100, height: 40, paddingLeft: 70}} value={searchFavorite} onChangeText={handleSearch} />
                     <ScrollView style={{flex: 1}}>
                         {
-                            favorites.map((user) => <User key={user.id} fullName={user.fullName} userName={user.userName} id={user.id}  selectUser={selectUser} deselectUser={deselectUser}/>)
+                            searchFavorite === "" ?
+                            favorites.map((user) => <User key={user.created_at} first_name={user.first_name} last_name={user.last_name} username={user.username} id={user.id} avatar_url={user.avatar_url} created_at={user.created_at} updated_at={user.updated_at} isSelected={isSelected} selectUser={selectUser} deselectUser={deselectUser}/> ) :
+                            searchUsers.map((user) => <User key={user.created_at} first_name={user.first_name} last_name={user.last_name} username={user.username} id={user.id} avatar_url={user.avatar_url} created_at={user.created_at} updated_at={user.updated_at} isSelected={isSelected} selectUser={selectUser} deselectUser={deselectUser} /> ) 
                         }
                     </ScrollView>
                 </View> :

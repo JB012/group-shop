@@ -1,10 +1,11 @@
 import { useSignIn } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
-import { Button, Text, TextInput, TouchableOpacity, View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { Button, Text, TextInput, TouchableOpacity, View, StyleSheet, Platform, ScrollView } from 'react-native'
 import { ClerkAPIError } from '@clerk/types'
 import { isClerkAPIResponseError } from '@clerk/clerk-react/errors'
 import React from 'react'
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6'
+import { KeyboardController, KeyboardAvoidingView } from 'react-native-keyboard-controller'
 
 export default function Page() {
   const { signIn, setActive, isLoaded } = useSignIn()
@@ -15,6 +16,10 @@ export default function Page() {
   const [hidePassword, setHidePassword] = React.useState(true)
 
   const [errors, setErrors] = React.useState<ClerkAPIError[]>();
+
+  React.useEffect(() => {
+      KeyboardController.preload();
+    }, []);
 
   // Handle the submission of the sign-in form
   const onSignInPress = async () => {

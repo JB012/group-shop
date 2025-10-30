@@ -87,6 +87,7 @@ export default function TabLayout() {
   name='chatRoom/[id]'
   options={{
     href: null,
+    headerShown: false
     }}
 />
 </Tabs>

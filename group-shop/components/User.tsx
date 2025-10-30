@@ -7,35 +7,40 @@ import { UserType } from './UserType';
 import { Menu,MenuOptions,MenuOption,MenuTrigger, renderers  } from 'react-native-popup-menu';
 const { Popover, SlideInMenu } = renderers;
 
-interface UserProp {
-    fullName : string, 
-    userName : string,  
+interface UserProp { 
+    avatar_url: string,
+    created_at: string,
+    updated_at: string,
+    first_name: string,
+    last_name: string,
+    username : string,  
     id : string, 
-    addToFavorites?: (user: UserType) => void, 
-    removeFromFavorites?: (user: UserType) => void, 
+    addToFavorites?: (id : string) => Promise<void>, 
+    removeFromFavorites?: (id : string) => Promise<void>, 
     isInFavorites?: (id: string) => boolean, 
-    selectUser?: (user : UserType) => void, 
-    deselectUser?: (user : UserType) => void
+    selectUser?: (id : string) => Promise<void>,
+    deselectUser?: (id : string) => Promise<void>,
+    isSelected?: (id : string) => boolean
 }
 
-export default function User({fullName, userName, id, selectUser, deselectUser, isInFavorites, addToFavorites, removeFromFavorites} : UserProp) {
+export default function User({first_name, last_name, username, id, isSelected, selectUser, deselectUser, isInFavorites, addToFavorites, removeFromFavorites} : UserProp) {
     const {isSignedIn, isLoaded, user} = useUser();
     const [added, setAdded] = useState(isInFavorites?.(id));
-    const [checked, setChecked] = useState(false);
+    const [checked, setChecked] = useState(isSelected?.(id));
 
     async function handlePopup() {
         setAdded(false);
-        removeFromFavorites?.({fullName, userName, id});
+        removeFromFavorites?.(id);
         
         return false;
     }
 
     async function handleOnClose() {
         if (added) {
-            addToFavorites?.({fullName, userName, id});
+            addToFavorites?.(id);
         }
         else {
-            removeFromFavorites?.({fullName, userName, id});
+            removeFromFavorites?.(id);
         }
         
         return false;
@@ -45,10 +50,10 @@ export default function User({fullName, userName, id, selectUser, deselectUser, 
         setChecked(!checked);
 
         if (checked) {
-            deselectUser?.({fullName, userName, id});
+            deselectUser?.(id);
         }
         else {
-            selectUser?.({fullName, userName, id});
+            selectUser?.(id);
         }
     }
 
@@ -60,8 +65,8 @@ export default function User({fullName, userName, id, selectUser, deselectUser, 
                         <View style={{ width: 50, height: 50, backgroundColor: 'red', borderRadius: 25}}>
                         </View>
                         <View style={{flex: 1}}>
-                            <Text>{fullName}</Text>
-                            <Text>@{userName}</Text>
+                            <Text>{`${first_name} ${last_name}`}</Text>
+                            <Text>@{username}</Text>
                         </View>
                     </View>
                     {
@@ -79,11 +84,12 @@ export default function User({fullName, userName, id, selectUser, deselectUser, 
                             </Menu>
                         </View> 
                         : !selectUser && user?.id !== id ?
-                        <Button onPress={() => {addToFavorites?.({fullName, userName, id}); setAdded(true);}} title="Add"></Button>
-                        : 
+                        <Button onPress={() => {addToFavorites?.(id); setAdded(true);}} title="Add"></Button>
+                        : user?.id !== id ?
                         <View>
                             <Checkbox style={{margin: 8}} value={checked} onValueChange={handleCheckBox} />  
                         </View>
+                        : <View/>
                     }
                 </View>
             </MenuTrigger>
@@ -93,8 +99,8 @@ export default function User({fullName, userName, id, selectUser, deselectUser, 
                         <View style={{ width: 80, height: 80, backgroundColor: 'red', borderRadius: 40}}>
                         </View>
                         <View>
-                            <Text style={{fontSize: 18}}>{fullName}</Text>
-                            <Text style={{fontSize: 14}}>@{userName}</Text>
+                            <Text style={{fontSize: 18}}>{`${first_name} ${last_name}`}</Text>
+                            <Text style={{fontSize: 14}}>@{username}</Text>
                         </View>
                     </View>
                     {

@@ -8,6 +8,7 @@ import { createClerkClient, User} from '@clerk/backend'
 import axios from "axios";
 import { UserType } from "../../components/UserType";
 import useOrientation from "@/utils/useOrientation";
+import { useSupabase } from "@/providers/SupabaseProvider";
 
 export default function People() {
     const orientation = useOrientation();
@@ -16,36 +17,66 @@ export default function People() {
     const {isSignedIn, isLoaded, user} = useUser();
     const [search, setSearch] = useState("");
     const [allUsers, setAllUsers] = useState(Array<UserType>);
-    const [searchUsers, setsearchUsers] = useState(Array<UserType>);
+    const [searchUsers, setSearchUsers] = useState(Array<UserType>);
     const [favorites, setFavorites] = useState(Array<UserType>);
-    
+    const supabase = useSupabase();
     
     useEffect(() => {
-        function getAllUsers() {
+        async function getAllUsers() {
             if (allUsers.length === 0) {
-                axios.get(`http://${process.env.EXPO_PUBLIC_LOCAL_IP}:5000/users`).then((res) => {setAllUsers(res.data); setsearchUsers(res.data)})
-                .catch((err) => console.log(err))
+                
+                const {data, error} = await supabase.from("users").select('*');
+
+                if (!error) {
+                    setAllUsers(data as UserType[]);
+                    setSearchUsers(data as UserType[]);
+                }
+                else {
+                    console.log(error);
+                }
             }
         }
         
-        function getAllFavorites() {
+        async function getAllFavorites() {
             if (favorites.length === 0) {
-                axios.get(`http://${process.env.EXPO_PUBLIC_LOCAL_IP}:5000/users/${user?.id}/favorites`).then((res) => setFavorites(res.data))
-                .catch((err) => console.log(err))
+                const {data, error} = await supabase.from('favorites').select().eq('userID', user!.id);
+                
+                if (!error) {
+                    const users : UserType[] = [];
+
+                    for (const elem of data) {
+                        const {data, error} = await supabase.from('users').select().eq('id', elem.favoriteID);
+
+                        if (!error) {
+                            users.push(...data as UserType[])
+                        }
+                        else {
+                            console.log(error);
+                        }
+                    }
+
+                    setFavorites(users);
+                }                
+                else {
+                    console.log(error);
+                } 
             }
         }
-    }, [favorites.length, user?.id, allUsers.length]);
+
+        getAllUsers();
+        getAllFavorites();
+    }, [favorites.length, user?.id, allUsers.length, supabase, user]);
 
 
     function handleSearch(input : string ) {
         setSearch(input);
 
-        const filteredSearchUsers = searchUsers.filter((user) => user.userName.startsWith(input.toLowerCase())); 
+        const filteredSearchUsers = searchUsers.filter((user) => user.username.startsWith(input.toLowerCase())); 
         if (filteredSearchUsers.length === 0) {
-            setsearchUsers(allUsers)
+            setSearchUsers(allUsers)
         } 
         else {
-            setsearchUsers(filteredSearchUsers);
+            setSearchUsers(filteredSearchUsers);
         }
     }
 
@@ -53,17 +84,23 @@ export default function People() {
         return favorites.find((favorite) => favorite.id === id) ? true : false;
     }
 
-    async function addToFavorites(someUser : UserType) {
-        if (!isInFavorites(someUser.id)) {
-            await axios.post(`http://${process.env.EXPO_PUBLIC_LOCAL_IP}:5000/users/addFavorite`, {currentUserID: user!.id, favoriteID: someUser.id});
-            setFavorites([...favorites, someUser]);
+    async function addToFavorites(id : string) {
+        if (!isInFavorites(id)) {
+            
+            const {error} = await supabase.from('favorites').insert({userID: user?.id, favoriteID: id});
+            
+            console.log(error);
+
+            const {data} = await supabase.from('users').select().eq('id', id);
+
+            setFavorites([...favorites, ...data as UserType[]]);
         }
     }
 
-    async function removeFromFavorites(someUser : UserType) {
-        if (isInFavorites(someUser.id)) {
-            await axios.post(`http://${process.env.EXPO_PUBLIC_LOCAL_IP}:5000/users/removeFavorite`, {currentUserID: user!.id, favoriteID: someUser.id});
-            setFavorites(favorites.filter((favorite) => favorite.id !== someUser.id));
+    async function removeFromFavorites(id : string) {
+        if (isInFavorites(id)) {
+            await supabase.from('favorites').delete().eq('userID', user!.id).eq('favoriteID', id);
+            setFavorites(favorites.filter((favorite) => favorite.id !== id));
         }
         
     }
@@ -78,8 +115,8 @@ export default function People() {
                 <View style={{flex: 1, gap: 10, paddingBottom: 30}}>
                     {
                         search === "" ?
-                        favorites.map((user) => <UserProfile key={user.id} fullName={user.fullName} userName={user.userName} id={user.id} isInFavorites={isInFavorites} addToFavorites={addToFavorites} removeFromFavorites={removeFromFavorites} /> ) :
-                        searchUsers.map((user) => <UserProfile key={user.id} fullName={user.fullName} userName={user.userName} id={user.id} isInFavorites={isInFavorites} addToFavorites={addToFavorites} removeFromFavorites={removeFromFavorites} /> ) 
+                        favorites.map((user) => <UserProfile key={user.created_at} first_name={user.first_name} last_name={user.last_name} username={user.username} id={user.id} avatar_url={user.avatar_url} created_at={user.created_at} updated_at={user.updated_at} isInFavorites={isInFavorites} addToFavorites={addToFavorites} removeFromFavorites={removeFromFavorites} /> ) :
+                        searchUsers.map((user) => <UserProfile key={user.created_at} first_name={user.first_name} last_name={user.last_name} username={user.username} id={user.id} avatar_url={user.avatar_url} created_at={user.created_at} updated_at={user.updated_at} isInFavorites={isInFavorites} addToFavorites={addToFavorites} removeFromFavorites={removeFromFavorites} /> ) 
                     }
                 </View>
             </ScrollView>
