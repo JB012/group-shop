@@ -50,26 +50,17 @@ export default function ChatRoom() {
   }, [id, navigation, supabase]);
 
   async function handleSend() {
-    const myChannel = supabase.channel('test-channel');
-
-    const response = await myChannel.httpSend('input', {content: input, chatroom_id: id, member_id: user?.id});
-
-    if (response.success) {
-      const {error} = await supabase.from('messages').insert({content: input, chatroom_id: id, member_id: user?.id})
-      if (error) {
-        Alert.alert(error.message);
-      }
-      else {  
-        setInput("");
-      }
+    const {error} = await supabase.from('messages').insert({content: input, chatroom_id: id, member_id: user?.id})
+    if (error) {
+      Alert.alert(error.message);
     }
-    else {
-      Alert.alert(response.error);
+    else {  
+      setInput("");
     }
   }
 
   return (
-    <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+    <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === "ios" ? "padding" : "height"} keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 1}>
       <View style={{flex: 1}}>
             <View style={{flexDirection: 'row', backgroundColor: 'white', height: 90, padding: 15, alignItems: 'center', justifyContent: 'space-between'}}>
               <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20}}>

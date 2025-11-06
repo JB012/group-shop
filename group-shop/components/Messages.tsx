@@ -34,36 +34,47 @@ export default function Messages({channel_id} : {channel_id: UUID}) {
 
     useEffect(() => {
         async function retrieveMessages() {
-            const {data, error} = await supabase.from('messages').select().eq('chatroom_id', channel_id).order('created_at', {ascending: true});
-            if (!error) {
-                setMessages(data as MessageData[]);
-            }
-            else {
-                Alert.alert(error.message);
+            if (messages.length === 0) {
+                console.log('change');
+                const {data, error} = await supabase.from('messages').select().eq('chatroom_id', channel_id)
+                .order('created_at', {ascending: true});
+                
+                if (!error) {
+                    setMessages(data as MessageData[]);
+                }
+                else {
+                    Alert.alert(error.message);
+                }
             }
         }
 
         retrieveMessages();
 
-        const myChannel = supabase.channel('test-channel')
-    
-        myChannel
-        .on(
-            'broadcast',
-            { event: 'input' }, // Listen for "shout". Can be "*" to listen to all events
-            (payload : Payload) => setMessages([...messages, payload.payload])
-        )
-        .subscribe();
-    }, [channel_id, messages, supabase]);
+        const myChannel = supabase.channel('test-channel');
+        myChannel.on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages'
+        }, (payload) => {console.log(JSON.stringify(payload.new)); setMessages([...messages, payload.new as MessageData])}).subscribe();
+
+        return () => {
+            supabase.removeChannel(myChannel);
+        }
+    }, [channel_id, messages, messages.length, supabase]);
 
     return (
         <LegendList
-            style={{flex: 1, backgroundColor: 'gainsboro'}}
+            style={{flex: 1, backgroundColor: 'gainsboro', flexDirection: 'column'}}
             data={messages}
             renderItem={renderItem}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item?.id ?? "unknown"}
             recycleItems={true}
             alignItemsAtEnd={true}
+            maintainScrollAtEnd={true}
+            maintainVisibleContentPosition={true}
+            maintainScrollAtEndThreshold={0.1}
+            estimatedItemSize={100}
+            initialContainerPoolRatio={messages.length + 10}
         >
         </LegendList>
     )
