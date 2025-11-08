@@ -23,7 +23,7 @@ Install the following:
 Enter the following commands in a terminal to run the development build.
 
 ```
-git clone 
+git clone git@github.com:JB012/group-shop.git
 ```
 ```
 cd group-shop/group-shop
